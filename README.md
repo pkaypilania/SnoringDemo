@@ -1,5 +1,9 @@
 # SnoringDemo
 
+[![Platforms](https://img.shields.io/badge/platforms-Android%20%7C%20iOS-green)](#)
+[![React Native](https://img.shields.io/badge/React%20Native-0.84-blue)](https://reactnative.dev/)
+[![Use Case](https://img.shields.io/badge/use%20case-AI%20Snoring%20Detection-orange)](#)
+
 SnoringDemo is a React Native AI audio analysis demo that records voice/audio,
 converts it to model-ready PCM, and predicts whether snoring exists.
 
