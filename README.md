@@ -1,97 +1,172 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# SnoringDemo
 
-# Getting Started
+SnoringDemo is a React Native AI audio analysis demo that records voice/audio,
+converts it to model-ready PCM, and predicts whether snoring exists.
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+This repository is designed as a practical reference for:
 
-## Step 1: Start Metro
+- How to integrate a TensorFlow Lite model in React Native
+- How to process audio in React Native with AI
+- How to build audio prediction pipelines in React Native
+- How to detect snoring from recorded audio on mobile
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+## Why this demo exists
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+Many mobile AI demos stop at model loading. This project focuses on a full,
+production-style pipeline:
 
-```sh
-# Using npm
-npm start
+1. Capture audio with modern React Native APIs
+2. Convert to strict model input format (mono, 16 kHz, float32 PCM)
+3. Run fast on-device inference with TFLite
+4. Aggregate window-level predictions into human-readable snoring events
 
-# OR using Yarn
-yarn start
+## Tech stack
+
+- React Native 0.84
+- TypeScript
+- react-native-fast-tflite (JSI-backed inference path)
+- react-native-nitro-sound (Nitro architecture for audio recording)
+- Native PCM converter module (`RNPCMConverter`)
+
+## Project structure
+
+```text
+src/
+	assets/
+		yamnet.tflite
+	constants/
+		audio.ts
+		model.ts
+	ml/
+		snoringAnalyzer.ts
+	native/
+		pcmConverter.ts
+	permissions/
+		requestMicrophonePermission.ts
+	services/
+		recorder.ts
 ```
 
-## Step 2: Build and run your app
+## Audio AI pipeline
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
+1. Record audio in app
+2. Convert recorded file into PCM float32 mono 16 kHz
+3. Read PCM in small windows (memory-friendly)
+4. Run YAMNet inference per window
+5. Detect snoring windows with thresholding
+6. Merge nearby positives with cooldown logic to estimate event count
 
-### Android
+## Performance and memory best practices used
 
-```sh
-# Using npm
-npm run android
+- Windowed processing instead of loading full audio into memory
+- Fixed model window size for deterministic runtime
+- Event-loop yielding during long analysis to keep UI responsive
+- Minimal allocations in core scoring loop
+- Native conversion for heavy audio format work
 
-# OR using Yarn
-yarn android
+## How to run
+
+### 1. Install dependencies
+
+```bash
+npm install
 ```
 
-### iOS
+### 2. iOS setup
 
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
-
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
-
-```sh
+```bash
+cd ios
 bundle install
-```
-
-Then, and every time you update your native dependencies, run:
-
-```sh
 bundle exec pod install
+cd ..
 ```
 
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
+### 3. Start Metro
 
-```sh
-# Using npm
+```bash
+npm start
+```
+
+### 4. Run Android
+
+```bash
+npm run android
+```
+
+### 5. Run iOS
+
+```bash
 npm run ios
-
-# OR using Yarn
-yarn ios
 ```
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+## Native module notes
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
+- Android PCM converter implementation is included in this repo.
+- JavaScript calls `RNPCMConverter` for PCM conversion on both platforms.
+- If your iOS app does not yet include `RNPCMConverter`, add the matching iOS
+	module implementation before running inference flow on iOS devices.
 
-## Step 3: Modify your app
+## Model input contract
 
-Now that you have successfully run the app, let's make changes!
+The model pipeline expects:
 
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
+- Mono audio
+- 16,000 Hz sample rate
+- Float32 PCM waveform
+- Windowed analysis based on YAMNet-compatible frame sizing
 
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
+If these constraints are violated, prediction quality will drop.
 
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
+## Public repo quality checklist
 
-## Congratulations! :tada:
+- Typed source code and linted project
+- Platform permissions documented
+- Third-party model notice included
+- Deterministic preprocessing and threshold logic
+- Readable module boundaries for review and onboarding
 
-You've successfully run and modified your React Native App. :partying_face:
+## Compliance and licensing
 
-### Now what?
+- Project license: [LICENSE](./LICENSE)
+- Third-party attributions and model notice:
+	[THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md)
 
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
+If you replace model assets, update both attribution and file integrity records.
 
-# Troubleshooting
+## SEO-friendly topics you can add in GitHub settings
 
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
+Use repository topics for better discoverability:
 
-# Learn More
+- react-native
+- react-native-ai
+- tflite
+- tensorflow-lite
+- react-native-fast-tflite
+- audio-processing
+- sound-classification
+- snoring-detection
+- on-device-ml
+- mobile-ai
 
-To learn more about React Native, take a look at the following resources:
+## FAQ
 
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+### How to integrate model in React Native?
+
+Use a TFLite runtime in React Native, define a strict preprocessing contract,
+and isolate model invocation in a dedicated service layer.
+
+### How to process audio in React Native by AI?
+
+Record audio, normalize and convert to model-required PCM format, process in
+small windows, then aggregate per-window predictions.
+
+### How to detect snoring in React Native?
+
+Use a sound event model (YAMNet or custom), calibrate snoring thresholds on
+real data, and apply smoothing/cooldown to avoid over-counting continuous snore
+segments.
+
+## Disclaimer
+
+This demo is for educational and product prototyping purposes and is not a
+medical diagnosis tool.
